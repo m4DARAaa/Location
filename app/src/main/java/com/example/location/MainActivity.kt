@@ -60,7 +60,7 @@ fun LocationDisplay(
         verticalArrangement = Arrangement.Center) {
         Text(text = "Location Not Available")
         Button(onClick = {
-            if (locationUtils.hasLocationPermission(context)){
+            if (locationUtils.HasLocationPermission(context)){
 
 
             }else{

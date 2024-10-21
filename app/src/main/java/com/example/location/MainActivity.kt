@@ -11,7 +11,6 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.magnifier
 import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -20,7 +19,6 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.core.app.ActivityCompat
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.location.ui.theme.LocationTheme
@@ -56,6 +54,11 @@ fun LocationDisplay(
     locationUtils: LocationUtils,
     viewModel: LocationViewModel,
     context: Context) {
+
+    val location=viewModel.location.value
+
+    val address=location?.let { locationUtils.reverseGeocodeLocation(location) }
+
     val requestPermissionLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.RequestMultiplePermissions(),
         onResult = { permissions ->
@@ -63,6 +66,7 @@ fun LocationDisplay(
                 && permissions [ Manifest.permission.ACCESS_FINE_LOCATION ] == true
             ) {
                 //I Have Location
+                locationUtils.requestLocationUpdate(viewModel=viewModel)
             } else {
                 //Ask For Location
                 val rationalRequired = ActivityCompat.shouldShowRequestPermissionRationale(
@@ -85,11 +89,16 @@ fun LocationDisplay(
     Column(modifier= Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center) {
-        Text(text = "Location Not Available")
-        Button(onClick = {
-            if (locationUtils.HasLocationPermission(context)){
-                //permission already granted update the location
+        if (location !=null){
+            Text(text = "Address:${location.latitude}${location.longitude}\n$address")
+        }else{
+            Text(text = "Address Not Available")
+        }
 
+        Button(onClick = {
+            if (locationUtils.hasLocationPermission(context)){
+                //permission already granted update the location
+                locationUtils.requestLocationUpdate(viewModel)
             }else{
                 //request location permission
                 requestPermissionLauncher.launch(
